@@ -46,18 +46,9 @@ bool initialize_window(void)
 
 void destroy_window(void)
 {
-    free(color_buffer);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-}
-
-void draw_pixel(int x, int y, uint32_t color)
-{
-    if((x >= 0 && x < window_width) && (y >= 0 && y < window_height))
-    {
-        color_buffer[(window_width * y) + x] = color;
-    }
 }
 
 void clear_color_buffer(uint32_t color)
@@ -66,31 +57,28 @@ void clear_color_buffer(uint32_t color)
     {
         for(int x = 0; x < window_width; ++x)
         {
-            draw_pixel(x, y, color);
+            color_buffer[(window_width * y) + x] = color;
         }
     }
 }
 
-void render_color_buffer(void)
+void draw_grid(void)
 {
-    int color_buffer_pitch = window_width*sizeof(uint32_t);
-    SDL_UpdateTexture(color_buffer_texure, 
-                      0, 
-                      color_buffer, 
-                      color_buffer_pitch);
-    SDL_RenderCopy(renderer, color_buffer_texure,0, 0);
+    uint32_t color = 0xFF333333;
+    for(int y = 0; y < window_height; y+=10)
+    {
+        for(int x = 0; x < window_width; x+=10)
+        {
+            color_buffer[(window_width * y) + x] = color;
+        }
+    }
 }
 
-void draw_rect(int x, int y, int width, int height, uint32_t color)
+void draw_pixel(int x, int y, uint32_t color)
 {
-    for(int j = 0; j < height; ++j)
+    if((x >= 0 && x < window_width) && (y >= 0 && y < window_height))
     {
-        for(int i = 0; i < width; ++i)
-        {
-            int current_x = x + i;
-            int current_y = y + j;
-            draw_pixel(current_x, current_y, color);
-        }
+        color_buffer[(window_width * y) + x] = color;
     }
 }
 
@@ -117,14 +105,33 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
     }
 }
 
-void draw_grid(void)
+void draw_rect(int x, int y, int width, int height, uint32_t color)
 {
-    uint32_t color = 0xFF333333;
-    for(int y = 0; y < window_height; y+=10)
+    for(int j = 0; j < height; ++j)
     {
-        for(int x = 0; x < window_width; x+=10)
+        for(int i = 0; i < width; ++i)
         {
-            draw_pixel(roundf(x), roundf(y), color);
+            int current_x = x + i;
+            int current_y = y + j;
+            draw_pixel(current_x, current_y, color);
         }
     }
 }
+
+void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
+{
+    draw_line(x0, y0, x1, y1, color);
+    draw_line(x1, y1, x2, y2, color);
+    draw_line(x2, y2, x0, y0, color);
+}
+
+void render_color_buffer(void)
+{
+    int color_buffer_pitch = window_width*sizeof(uint32_t);
+    SDL_UpdateTexture(color_buffer_texure, 
+                      0, 
+                      color_buffer, 
+                      color_buffer_pitch);
+    SDL_RenderCopy(renderer, color_buffer_texure,0, 0);
+}
+
