@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "mesh.h"
 #include "array.h"
 
@@ -53,4 +55,34 @@ void load_cube_mesh_data(void)
         face_t cube_face = cube_faces[i];
         array_push(mesh.faces, cube_face);
     }
+}
+
+void load_obj_file_data(char *filename)
+{
+    // TODO: Read the content of the obj file and load
+    // vertices and faces in our mesh.vertices and mesh.faces
+    FILE *obj_file = fopen(filename, "r");
+    if(obj_file)
+    {
+        char line[1024];
+        while(fgets(line, sizeof(line), obj_file))
+        {
+            if(strncmp(line, "v ", 2) == 0)
+            {
+                vec3_t vertex = {0};
+                sscanf(line, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z); 
+                array_push(mesh.vertices, vertex)
+            }
+            else if(strncmp(line, "f ", 2) == 0)
+            {
+                face_t v = {0};
+                face_t t = {0};
+                face_t n = {0};
+                sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
+                &v.a, &t.a, &n.a, &v.b, &t.b, &n.b, &v.c, &t.c, &n.c);
+                array_push(mesh.faces, v);
+            }
+        }
+    }
+    fclose(obj_file);
 }

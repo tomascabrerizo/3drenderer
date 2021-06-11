@@ -36,7 +36,8 @@ void setup(void)
     }
     
     // Loads the cube values in the mesh data structure
-    load_cube_mesh_data();
+    //load_cube_mesh_data();
+    load_obj_file_data("./assets/f22.obj");
 }
 
 void process_intput(void)
@@ -75,21 +76,13 @@ vec2_t project(vec3_t point)
 }
 
 void update(void)
-{
-    int current_ms = (SDL_GetTicks() - previous_frame_time);
-    if(current_ms < FRAME_TARGET_TIME)
-    {
-        int ms_to_sleep = FRAME_TARGET_TIME - current_ms;
-        SDL_Delay(ms_to_sleep);
-    }
-    previous_frame_time = SDL_GetTicks();
-    
+{ 
     // Initialize array of triangles to render
     triangles_to_render = 0;
 
     mesh.rotation.x += 0.01f;
-    mesh.rotation.y += 0.01f;
-    mesh.rotation.z += 0.01f;
+    mesh.rotation.y += 0.0f;
+    mesh.rotation.z += 0.0f;
     
     int num_faces = array_length(mesh.faces);
     for(int i = 0; i < num_faces; ++i)
@@ -136,14 +129,15 @@ void render(void)
     {
         triangle_t triangle = triangles_to_render[i];
 #if 1 
-        draw_rect(triangle.points[0].x-5, triangle.points[0].y-5, 10, 10, 0xFFFFFF00);
-        draw_rect(triangle.points[1].x-5, triangle.points[1].y-5, 10, 10, 0xFFFFFF00);
-        draw_rect(triangle.points[2].x-5, triangle.points[2].y-5, 10, 10, 0xFFFFFF00);
-//#else
         draw_triangle(triangle.points[0].x, triangle.points[0].y,
                       triangle.points[1].x, triangle.points[1].y,
                       triangle.points[2].x, triangle.points[2].y,
                       0xFF00FF00); 
+//#else
+        int s = 4;
+        draw_rect(triangle.points[0].x-s/2, triangle.points[0].y-s/2, s, s, 0xFFFFFF00);
+        draw_rect(triangle.points[1].x-s/2, triangle.points[1].y-s/2, s, s, 0xFFFFFF00);
+        draw_rect(triangle.points[2].x-s/2, triangle.points[2].y-s/2, s, s, 0xFFFFFF00);
 #endif
     }
     
@@ -174,6 +168,15 @@ int main(int argc, char **argv)
         process_intput();
         update();
         render();
+        
+        int current_ms = (SDL_GetTicks() - previous_frame_time);
+        if(current_ms < FRAME_TARGET_TIME)
+        {
+            int ms_to_sleep = FRAME_TARGET_TIME - current_ms;
+            SDL_Delay(ms_to_sleep);
+        }
+        previous_frame_time = SDL_GetTicks();
+        
     }
 
     destroy_window();
