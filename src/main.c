@@ -9,7 +9,7 @@
 
 triangle_t *triangles_to_render = 0;
 
-vec3_t camera_position =  { .x = 0.0f, .y = 0.0f, .z = -5.0f};
+vec3_t camera_position =  { 0.0f, 0.0f, 0.0f};
 
 float fov_factor = 640;
 
@@ -37,7 +37,7 @@ void setup(void)
     
     // Loads the cube values in the mesh data structure
     //load_cube_mesh_data();
-    load_obj_file_data("./assets/f22.obj");
+    load_obj_file_data("./assets/cube.obj");
 }
 
 void process_intput(void)
@@ -81,8 +81,8 @@ void update(void)
     triangles_to_render = 0;
 
     mesh.rotation.x += 0.01f;
-    mesh.rotation.y += 0.0f;
-    mesh.rotation.z += 0.0f;
+    mesh.rotation.y += 0.01f;
+    mesh.rotation.z += 0.01f;
     
     int num_faces = array_length(mesh.faces);
     for(int i = 0; i < num_faces; ++i)
@@ -94,28 +94,49 @@ void update(void)
         face_vertices[1] = mesh.vertices[mesh_face.b - 1];
         face_vertices[2] = mesh.vertices[mesh_face.c - 1];
     
-        triangle_t projected_triangle;
-
+        vec3_t transformed_triangle[3];
         for(int j = 0; j < 3; ++j)
         {
             vec3_t transformed_vertex = face_vertices[j];
             transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
             transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
-
             // Translate vertex away from the camera
-            transformed_vertex.z -= camera_position.z;
-            
+            transformed_vertex.z += 5;
+            transformed_triangle[j] = transformed_vertex;
+        }
+        
+        // Calculate triangle normal
+        vec3_t vector_a = transformed_triangle[0];
+        vec3_t vector_b = transformed_triangle[1];
+        vec3_t vector_c = transformed_triangle[2];
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_normalize(&vector_ab);
+        vec3_normalize(&vector_ac);
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+        vec3_normalize(&normal);
+        vec3_t camera_ray = vec3_sub(camera_position, vector_a); 
+        float dot_normal_camera = vec3_dot(camera_ray, normal);
+        if(dot_normal_camera < 0)
+        {
+            continue;
+        }
+        
+        triangle_t projected_triangle;
+        for(int j = 0; j < 3; ++j)
+        {
             // Projects current vertex
-            vec2_t projected_point = project(transformed_vertex);
+            vec2_t projected_point = project(transformed_triangle[j]);
 
             // Scale and translate projected points to the middle of the screen;
             projected_point.x += (window_width / 2);
             projected_point.y += (window_height / 2);
 
             projected_triangle.points[j] = projected_point;
+
         }
-        // Saven projected triangle in array of triangles to render
+        // Save projected triangle in array of triangles to render
         array_push(triangles_to_render, projected_triangle);
     }
 }
@@ -128,17 +149,14 @@ void render(void)
     for(int i = 0; i < num_triangles ; ++i)
     {
         triangle_t triangle = triangles_to_render[i];
-#if 1 
+        draw_filled_triangle(triangle.points[0].x, triangle.points[0].y,
+                      triangle.points[1].x, triangle.points[1].y,
+                      triangle.points[2].x, triangle.points[2].y,
+                      0xFFFFFFFF); 
         draw_triangle(triangle.points[0].x, triangle.points[0].y,
                       triangle.points[1].x, triangle.points[1].y,
                       triangle.points[2].x, triangle.points[2].y,
-                      0xFF00FF00); 
-//#else
-        int s = 4;
-        draw_rect(triangle.points[0].x-s/2, triangle.points[0].y-s/2, s, s, 0xFFFFFF00);
-        draw_rect(triangle.points[1].x-s/2, triangle.points[1].y-s/2, s, s, 0xFFFFFF00);
-        draw_rect(triangle.points[2].x-s/2, triangle.points[2].y-s/2, s, s, 0xFFFFFF00);
-#endif
+                      0xFF000000); 
     }
     
     // Clear array of triangles 
