@@ -7,6 +7,7 @@ SDL_Window *window = 0;
 SDL_Renderer *renderer = 0;
 SDL_Texture *color_buffer_texure = 0;
 uint32_t *color_buffer = 0;
+render_mode_t render_mode = 0;
 
 bool initialize_window(void)
 {
