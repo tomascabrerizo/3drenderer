@@ -14,6 +14,18 @@ typedef struct
     float z;
 } vec3_t;
 
+typedef union 
+{
+    struct
+    {
+        float x;
+        float y;
+        float z;
+        float w;
+    };
+    float v[4];
+} vec4_t;
+
 // NOTE: Vector 2d
 
 float vec2_length_sqrt(vec2_t v);
@@ -40,5 +52,13 @@ void vec3_normalize(vec3_t *v);
 vec3_t vec3_rotate_x(vec3_t v, float angle);
 vec3_t vec3_rotate_y(vec3_t v, float angle);
 vec3_t vec3_rotate_z(vec3_t v, float angle);
+
+vec3_t vec3_from_vec4(vec4_t v);
+
+
+// NOTE: Vector 4d
+vec4_t vec4_from_vec3(vec3_t v);
+
+
 
 #endif //VECTOR_H

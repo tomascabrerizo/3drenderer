@@ -6,6 +6,7 @@
 #include "display.h"
 #include "vector.h"
 #include "mesh.h"
+#include "matrix.h"
 
 triangle_t *triangles_to_render = 0;
 vec3_t camera_position =  { 0.0f, 0.0f, 0.0f };
@@ -110,6 +111,11 @@ void update(void)
     mesh.rotation.x += 0.01f;
     mesh.rotation.y += 0.01f;
     mesh.rotation.z += 0.01f;
+
+    mesh.scale.x += 0.002f;
+    mesh.scale.y += 0.001f;
+
+    mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     
     int num_faces = array_length(mesh.faces);
     for(int i = 0; i < num_faces; ++i)
@@ -121,13 +127,12 @@ void update(void)
         face_vertices[1] = mesh.vertices[mesh_face.b - 1];
         face_vertices[2] = mesh.vertices[mesh_face.c - 1];
     
-        vec3_t transformed_vertices[3];
+        vec4_t transformed_vertices[3];
         for(int j = 0; j < 3; ++j)
         {
-            vec3_t transformed_vertex = face_vertices[j];
-            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+            vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
+            transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+            
             // Translate vertex away from the camera
             transformed_vertex.z += 5;
             transformed_vertices[j] = transformed_vertex;
@@ -136,9 +141,10 @@ void update(void)
         if(render_mode & RENDER_FACE_CULLING)
         {
             // Calculate triangle normal
-            vec3_t vector_a = transformed_vertices[0];
-            vec3_t vector_b = transformed_vertices[1];
-            vec3_t vector_c = transformed_vertices[2];
+            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
+
             vec3_t vector_ab = vec3_sub(vector_b, vector_a);
             vec3_t vector_ac = vec3_sub(vector_c, vector_a);
             vec3_normalize(&vector_ab);
@@ -157,7 +163,7 @@ void update(void)
         for(int j = 0; j < 3; ++j)
         {
             // Projects current vertex
-            projected_points[j] = project(transformed_vertices[j]);
+            projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
 
             // Scale and translate projected points to the middle of the screen;
             projected_points[j].x += (window_width / 2);
@@ -251,7 +257,8 @@ int main(int argc, char **argv)
     is_running = initialize_window();
     
     setup();
-
+    
+    previous_frame_time = SDL_GetTicks();
     while(is_running)
     {
         process_intput();
@@ -263,9 +270,9 @@ int main(int argc, char **argv)
         {
             int ms_to_sleep = FRAME_TARGET_TIME - current_ms;
             SDL_Delay(ms_to_sleep);
+            current_ms = (SDL_GetTicks() - previous_frame_time);
         }
-        previous_frame_time = SDL_GetTicks();
-        
+        previous_frame_time = current_ms;
     }
 
     destroy_window();

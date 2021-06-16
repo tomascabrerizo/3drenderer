@@ -3,9 +3,13 @@
 #include "mesh.h"
 #include "array.h"
 
-mesh_t mesh = {
+mesh_t mesh = 
+{
     .vertices = 0,
-    .faces = 0
+    .faces = 0,
+    .rotation = {0},
+    .scale = {1.0f, 1.0f, 1.0f},
+    .translation = {0},
 };
 
 // TODO: Create implemtation form mesh.h functions
