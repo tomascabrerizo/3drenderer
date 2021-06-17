@@ -112,10 +112,22 @@ void update(void)
     mesh.rotation.y += 0.01f;
     mesh.rotation.z += 0.01f;
 
-    mesh.scale.x += 0.002f;
-    mesh.scale.y += 0.001f;
+    //mesh.scale.x += 0.002f;
+    //mesh.scale.y += 0.001f;
+
+    // Translate vertex away from the camera
+    //mesh.translation.x += 0.01f;
+    mesh.translation.z = 5.0f;
 
     mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t translation_matrix = mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+    mat4_t rotation_matrix = mat4_mul_mat4(mat4_mul_mat4(mat4_make_rotation_x(mesh.rotation.x), 
+                                                         mat4_make_rotation_y(mesh.rotation.y)), 
+                                                         mat4_make_rotation_z(mesh.rotation.z));
+    // Creating World matrix combining scale, rotation and translation
+    mat4_t world_matrix = mat4_identity();
+    // Order matters: First Scale the Rotate, Then Translate [T]*[R]*[S]*V
+    world_matrix = mat4_mul_mat4(translation_matrix, mat4_mul_mat4(rotation_matrix, scale_matrix));
     
     int num_faces = array_length(mesh.faces);
     for(int i = 0; i < num_faces; ++i)
@@ -131,10 +143,8 @@ void update(void)
         for(int j = 0; j < 3; ++j)
         {
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
-            transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
+            transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
             
-            // Translate vertex away from the camera
-            transformed_vertex.z += 5;
             transformed_vertices[j] = transformed_vertex;
         }
 
@@ -265,14 +275,16 @@ int main(int argc, char **argv)
         update();
         render();
         
-        int current_ms = (SDL_GetTicks() - previous_frame_time);
+        int current_time = SDL_GetTicks();
+        int current_ms = (current_time - previous_frame_time);
         if(current_ms < FRAME_TARGET_TIME)
         {
             int ms_to_sleep = FRAME_TARGET_TIME - current_ms;
             SDL_Delay(ms_to_sleep);
-            current_ms = (SDL_GetTicks() - previous_frame_time);
+            current_time = SDL_GetTicks();
+            current_ms = (current_time - previous_frame_time);
         }
-        previous_frame_time = current_ms;
+        previous_frame_time = current_time;
     }
 
     destroy_window();
