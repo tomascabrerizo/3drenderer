@@ -7,6 +7,7 @@
 #include "vector.h"
 #include "mesh.h"
 #include "matrix.h"
+#include "light.h"
 
 bool is_running = false;
 int previous_frame_time = 0;
@@ -44,7 +45,6 @@ void setup(void)
     // Loads the cube values in the mesh data structure
     load_cube_mesh_data();
     //load_obj_file_data("./assets/cube.obj");
-    
 }
 
 void process_intput(void)
@@ -145,19 +145,19 @@ void update(void)
             transformed_vertices[j] = transformed_vertex;
         }
 
+        // Calculate triangle normal
+        vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+        vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+        vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_normalize(&vector_ab);
+        vec3_normalize(&vector_ac);
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+        vec3_normalize(&normal);
+
         if(render_mode & RENDER_FACE_CULLING)
         {
-            // Calculate triangle normal
-            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
-            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
-            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
-
-            vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-            vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-            vec3_normalize(&vector_ab);
-            vec3_normalize(&vector_ac);
-            vec3_t normal = vec3_cross(vector_ab, vector_ac);
-            vec3_normalize(&normal);
             vec3_t camera_ray = vec3_sub(camera_position, vector_a); 
             float dot_normal_camera = vec3_dot(camera_ray, normal);
             if(dot_normal_camera < 0)
@@ -184,7 +184,12 @@ void update(void)
         // Calculate avg_depth for the face
         float avg_depth = 0;
         avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0f;
-        
+       
+        // Calculate the light intensity
+        vec3_normalize(&light.direction);
+        float light_intensity_factor = -vec3_dot(normal, light.direction);
+        uint32_t triangle_color = light_apply_intensity(mesh_face.color, light_intensity_factor);
+
         triangle_t projected_triangle = 
         {
             .points = 
@@ -193,7 +198,7 @@ void update(void)
                 { projected_points[1].x, projected_points[1].y },
                 { projected_points[2].x, projected_points[2].y },
             },
-            .color = mesh_face.color,
+            .color = triangle_color,
             .avg_depth = avg_depth,
         };
         // Save projected triangle in array of triangles to render

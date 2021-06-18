@@ -1,0 +1,51 @@
+if &cp | set nocp | endif
+let s:cpo_save=&cpo
+set cpo&vim
+map! <S-Insert> *
+nnoremap  :make
+nnoremap  :!build.bat
+vmap  "*d
+nnoremap  :!run.bat
+vmap gx <Plug>NetrwBrowseXVis
+nmap gx <Plug>NetrwBrowseX
+vnoremap <silent> <Plug>NetrwBrowseXVis :call netrw#BrowseXVis()
+nnoremap <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(netrw#GX(),netrw#CheckIfRemote(netrw#GX()))
+nnoremap <M-S-P> :b 
+nnoremap <M-p> :find 
+nnoremap <C-Z> :!run.bat
+nnoremap <C-X> :!build.bat
+nnoremap <C-C> :make
+nmap <M-S-N> :cp
+nmap <M-n> :cn
+vmap <C-X> "*d
+vmap <C-Del> "*d
+vmap <S-Del> "*d
+vmap <C-Insert> "*y
+vmap <S-Insert> "-d"*P
+nmap <S-Insert> "*P
+nmap Î :cp
+nnoremap Ð :b 
+nmap î :cn
+nnoremap ð :find 
+let &cpo=s:cpo_save
+unlet s:cpo_save
+set autoindent
+set background=dark
+set backspace=start,indent,eol
+set belloff=all
+set clipboard=unnamed
+set expandtab
+set guifont=liberation_mono:h11:cANSI
+set guioptions=egt
+set helplang=En
+set incsearch
+set makeprg=mingw32-make
+set path=.,,,**
+set shiftwidth=4
+set smartcase
+set softtabstop=4
+set noswapfile
+set tabstop=4
+set wildmenu
+set window=55
+" vim: set ft=vim :
