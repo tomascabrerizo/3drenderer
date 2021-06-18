@@ -120,3 +120,25 @@ mat4_t mat4_mul_mat4(mat4_t a, mat4_t b)
     return result;
 }
 
+mat4_t mat4_make_perspective(float fov, float aspect, float znear, float zfar)
+{
+    mat4_t result = {0};
+    result.m[0][0] = aspect * (1.0f / (tanf(fov / 2.0f))); 
+    result.m[1][1] = 1.0f / tanf(fov / 2.0f); 
+    result.m[2][2] = zfar / (zfar - znear); 
+    result.m[2][3] = (-zfar * znear) / (zfar - znear); 
+    result.m[3][2] = 1.0f;
+    return result;
+}
+
+vec4_t mat4_mul_vec4_project(mat4_t m, vec4_t v)
+{
+    vec4_t result = mat4_mul_vec4(m, v);
+    if(result.w != 0.0f)
+    {
+        result.x /= result.w;
+        result.y /= result.w;
+        result.z /= result.w;
+    }
+    return result;
+}

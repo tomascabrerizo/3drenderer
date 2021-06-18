@@ -8,11 +8,11 @@
 #include "mesh.h"
 #include "matrix.h"
 
-triangle_t *triangles_to_render = 0;
-vec3_t camera_position =  { 0.0f, 0.0f, 0.0f };
-float fov_factor = 640;
 bool is_running = false;
 int previous_frame_time = 0;
+triangle_t *triangles_to_render = 0;
+vec3_t camera_position =  { 0.0f, 0.0f, 0.0f };
+mat4_t proj_matrix;
 
 void setup(void)
 {
@@ -33,11 +33,18 @@ void setup(void)
         fprintf(stderr, "Error creating SDL color buffer texture");
     }
     
+    render_mode = RENDER_TRIANGLE|RENDER_WIREFRAME|RENDER_FACE_CULLING;
+    // Initialize perspective projection matrix
+    float fov = (60*M_PI)/180;
+    float aspect = (float)window_height/(float)window_width;
+    float znear = 0.1f;
+    float zfar = 100.0f;
+    proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+    
     // Loads the cube values in the mesh data structure
     load_cube_mesh_data();
     //load_obj_file_data("./assets/cube.obj");
     
-    render_mode = RENDER_TRIANGLE|RENDER_WIREFRAME|RENDER_FACE_CULLING;
 }
 
 void process_intput(void)
@@ -91,16 +98,6 @@ void process_intput(void)
             }break;
         }
     }
-}
-
-vec2_t project(vec3_t point)
-{
-    vec2_t projected_point = 
-    {
-        .x = (fov_factor * point.x) / point.z, 
-        .y = (fov_factor * point.y) / point.z
-    };
-    return projected_point;
 }
 
 void update(void)
@@ -169,15 +166,19 @@ void update(void)
             }
         }
         
-        vec2_t projected_points[3];
+        vec4_t projected_points[3];
         for(int j = 0; j < 3; ++j)
         {
             // Projects current vertex
-            projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
-
-            // Scale and translate projected points to the middle of the screen;
-            projected_points[j].x += (window_width / 2);
-            projected_points[j].y += (window_height / 2);
+            projected_points[j] = mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
+            
+            // Scale and translate into the view port
+            // Scale into the view
+            projected_points[j].x *= (window_width / 2.0f);
+            projected_points[j].y *= (window_height / 2.0f);
+            // Translate projected points to the middle of the screen;
+            projected_points[j].x += (window_width / 2.0f);
+            projected_points[j].y += (window_height / 2.0f);
         }
         
         // Calculate avg_depth for the face
@@ -188,9 +189,9 @@ void update(void)
         {
             .points = 
             {
-                projected_points[0],
-                projected_points[1],
-                projected_points[2],
+                { projected_points[0].x, projected_points[0].y },
+                { projected_points[1].x, projected_points[1].y },
+                { projected_points[2].x, projected_points[2].y },
             },
             .color = mesh_face.color,
             .avg_depth = avg_depth,
