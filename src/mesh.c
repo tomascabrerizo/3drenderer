@@ -84,6 +84,7 @@ void load_obj_file_data(char *filename)
                 face_t n = {0};
                 sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
                 &v.a, &t.a, &n.a, &v.b, &t.b, &n.b, &v.c, &t.c, &n.c);
+                v.color = 0xFFFFFFFF;
                 array_push(mesh.faces, v);
             }
         }

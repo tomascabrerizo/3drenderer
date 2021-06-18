@@ -43,8 +43,8 @@ void setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
     
     // Loads the cube values in the mesh data structure
-    load_cube_mesh_data();
-    //load_obj_file_data("./assets/cube.obj");
+    //load_cube_mesh_data();
+    load_obj_file_data("./assets/f22.obj");
 }
 
 void process_intput(void)
@@ -106,8 +106,8 @@ void update(void)
     triangles_to_render = 0;
 
     mesh.rotation.x += 0.01f;
-    mesh.rotation.y += 0.01f;
-    mesh.rotation.z += 0.01f;
+    //mesh.rotation.y += 0.02f;
+    //mesh.rotation.z += 0.03f;
 
     //mesh.scale.x += 0.002f;
     //mesh.scale.y += 0.001f;
