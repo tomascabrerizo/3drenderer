@@ -14,7 +14,8 @@ typedef enum
     RENDER_DOTS         = (1 << 0),
     RENDER_WIREFRAME    = (1 << 1),
     RENDER_TRIANGLE     = (1 << 2),
-    RENDER_FACE_CULLING = (1 << 3)
+    RENDER_FACE_CULLING = (1 << 3),
+    RENDER_TEXTURE      = (1 << 4),
 } render_mode_t;
 extern render_mode_t render_mode;
 
