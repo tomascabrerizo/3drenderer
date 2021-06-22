@@ -102,17 +102,51 @@ void draw_texture_triangle(int x0, int y0, float u0, float v0,
     float inv_slope_2 = 0.0f;
     if((y1 - y0) != 0) inv_slope_1 = (float)(x1 - x0) / fabs(y1 - y0);
     if((y2 - y0) != 0) inv_slope_2 = (float)(x2 - x0) / fabs(y2 - y0);
-
-    // Render the bottom part of the triangle (flat top)
-    for(int y = y0; y <= y1; ++y)
-    {
-        int x_start = x1 + ((y - y1) * inv_slope_1);
-        int x_end = x0 + ((y - y0) * inv_slope_2);
     
-        for(int x = x_start; x <= x_end; ++x)
+    if(y1 - y0 != 0)
+    {
+        for(int y = y0; y <= y1; ++y)
         {
-            // TODO: Draw pixel with color that comes from the texture
-            draw_pixel(x, y, 0xFFFF0000);
+            int x_start = x1 + ((y - y1) * inv_slope_1);
+            int x_end = x0 + ((y - y0) * inv_slope_2);
+        
+            if(x_end < x_start)
+            {
+                int_swap(&x_start, &x_end);
+            }
+
+            for(int x = x_start; x <= x_end; ++x)
+            {
+                // TODO: Draw pixel with color that comes from the texture
+                draw_pixel(x, y, 0xFFFF0000);
+            }
+        }
+    }
+
+    
+    // Render the bottom part of the triangle (flat top)
+    inv_slope_1 = 0.0f;
+    inv_slope_2 = 0.0f;
+    if((y1 - y2) != 0) inv_slope_1 = (float)(x2 - x1) / fabs(y1 - y2);
+    if((y0 - y2) != 0) inv_slope_2 = (float)(x2 - x0) / fabs(y0 - y2); 
+
+    if(y1 - y2 != 0)
+    {
+        for(int y = y2; y >= y1; --y)
+        {
+            int x_start = x1 + (y - y1) * inv_slope_1;
+            int x_end = x2 + (y - y2) * inv_slope_2;
+            
+            if(x_end < x_start)
+            {
+                int_swap(&x_start, &x_end);
+            }
+
+            for(int x = x_start; x <= x_end; ++x)
+            {
+                // TODO: Draw pixel with color that comes from the texture
+                draw_pixel(x, y, 0xFFFF0000);
+            }
         }
     }
 }
