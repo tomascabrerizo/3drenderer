@@ -14,16 +14,12 @@ typedef struct
     float z;
 } vec3_t;
 
-typedef union 
+typedef struct 
 {
-    struct
-    {
-        float x;
-        float y;
-        float z;
-        float w;
-    };
-    float v[4];
+    float x;
+    float y;
+    float z;
+    float w;
 } vec4_t;
 
 // NOTE: Vector 2d
@@ -54,6 +50,7 @@ vec3_t vec3_rotate_y(vec3_t v, float angle);
 vec3_t vec3_rotate_z(vec3_t v, float angle);
 
 vec3_t vec3_from_vec4(vec4_t v);
+vec2_t vec2_from_vec4(vec4_t v);
 
 
 // NOTE: Vector 4d
