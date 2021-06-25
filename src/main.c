@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "array.h"
+#include "upng.h"
 
 #include "display.h"
 #include "vector.h"
@@ -45,7 +46,26 @@ void setup(void)
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
     
     // Load texture hardcode texture data
+#if 1
+    upng_t *texture_png = upng_new_from_file("./assets/cube.png");
+    if(texture_png)
+    {
+        upng_decode(texture_png);
+        
+        // Set texture width height
+        texture_width = upng_get_width(texture_png); 
+        texture_height = upng_get_height(texture_png); 
+
+        // Alloc texture pixels in mesh_texture
+        size_t texture_size = (size_t)upng_get_size(texture_png);
+        mesh_texture = (uint32_t *)malloc(texture_size); 
+        memcpy(mesh_texture, upng_get_buffer(texture_png), texture_size);
+        
+        upng_free(texture_png);
+    }
+#else
     mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
+#endif
 
     // Loads the cube values in the mesh data structure
     load_cube_mesh_data();
@@ -120,8 +140,8 @@ void update(void)
     // Initialize array of triangles to render
     triangles_to_render = 0;
 
-    //mesh.rotation.x += 0.01f;
-    //mesh.rotation.y += 0.02f;
+    mesh.rotation.x += 0.01f;
+    mesh.rotation.y += 0.02f;
     //mesh.rotation.z += 0.03f;
 
     //mesh.scale.x += 0.002f;
